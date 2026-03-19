@@ -1,0 +1,14 @@
+{
+  "name": "Ruby Puppy Tracker",
+  "short_name": "Ruby",
+  "description": "Track feeding, weight, sleep, potty and milestones for Ruby",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fdf2f8",
+  "theme_color": "#e8a0bf",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}

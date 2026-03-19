@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#e8a0bf">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Track feeding, weight, sleep, potty and milestones for Ruby the Maltese Shih Tzu puppy">
+  <title>Ruby Puppy Tracker</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.svg">
+
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <div class="top-bar__left">
+      <span class="top-bar__emoji">🐾</span>
+      <h1 class="top-bar__title">Ruby</h1>
+      <span id="puppy-age" class="top-bar__age"></span>
+    </div>
+    <div class="top-bar__right">
+      <span id="sync-indicator" class="sync-indicator hidden" title="Synced">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </span>
+      <button id="auth-btn" class="auth-btn" title="Sign in to sync">
+        <svg id="auth-icon" class="auth-btn__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <img id="auth-avatar" class="auth-btn__avatar hidden" width="28" height="28" alt="" />
+      </button>
+    </div>
+  </header>
+
+  <!-- Main content area -->
+  <main id="tab-content" class="tab-content">
+
+    <!-- Feeding Tab -->
+    <section class="tab-panel active" data-tab="feeding">
+      <div id="page-feeding"></div>
+    </section>
+
+    <!-- Weight Tab -->
+    <section class="tab-panel" data-tab="weight">
+      <div id="page-weight"></div>
+    </section>
+
+    <!-- Potty Tab -->
+    <section class="tab-panel" data-tab="potty">
+      <div id="page-potty"></div>
+    </section>
+
+    <!-- Sleep Tab -->
+    <section class="tab-panel" data-tab="sleep">
+      <div id="page-sleep"></div>
+    </section>
+
+    <!-- Health Tab -->
+    <section class="tab-panel" data-tab="health">
+      <div id="page-health"></div>
+    </section>
+
+    <!-- Milestones Tab -->
+    <section class="tab-panel" data-tab="milestones">
+      <div id="page-milestones"></div>
+    </section>
+
+  </main>
+
+  <!-- Bottom tab bar -->
+  <nav class="tab-bar" aria-label="Main navigation">
+    <button class="tab-bar__btn active" data-tab="feeding">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      <span>Feed</span>
+    </button>
+    <button class="tab-bar__btn" data-tab="weight">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11l1.5 11H5L6.5 6.5z"/><path d="M9 6.5V4a3 3 0 0 1 6 0v2.5"/></svg>
+      <span>Weight</span>
+    </button>
+    <button class="tab-bar__btn" data-tab="potty">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+      <span>Potty</span>
+    </button>
+    <button class="tab-bar__btn" data-tab="sleep">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span>Sleep</span>
+    </button>
+    <button class="tab-bar__btn" data-tab="health">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      <span>Health</span>
+    </button>
+    <button class="tab-bar__btn" data-tab="milestones">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Miles.</span>
+    </button>
+  </nav>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
