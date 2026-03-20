@@ -9,14 +9,14 @@
 const FB_VERSION = '11.6.0';
 const CDN = `https://www.gstatic.com/firebasejs/${FB_VERSION}`;
 
-// ⚠️ Replace with your own Firebase project config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:0000000000000000"
+  apiKey: "AIzaSyBQQ8BHSHCdQGvH1gYyl2QdNHsxwvnygxs",
+  authDomain: "puppy-tracker-5c2e3.firebaseapp.com",
+  projectId: "puppy-tracker-5c2e3",
+  storageBucket: "puppy-tracker-5c2e3.firebasestorage.app",
+  messagingSenderId: "115746638282",
+  appId: "1:115746638282:web:a4a52df8b406092b1fa733",
+  measurementId: "G-95T440S3DQ"
 };
 
 // Shared document ID — all users read/write the same puppy data
