@@ -96,9 +96,14 @@ async function handleAuthStateChange(user) {
         await pushLocalToCloud();
       }
       // Subscribe to real-time updates — only refresh if data actually changed
+      // Debounce to avoid rapid fire from multiple field writes
+      let _cloudRefreshTimer = null;
       subscribeSharedData(data => {
         const changed = mergeCloudData(data);
-        if (changed) refreshAllPages();
+        if (changed) {
+          clearTimeout(_cloudRefreshTimer);
+          _cloudRefreshTimer = setTimeout(() => safeRefreshAllPages(), 500);
+        }
       });
     } catch (err) {
       console.warn('Cloud sync error:', err.message);
@@ -160,6 +165,41 @@ localStorage.setItem = function(key, value) {
   // Don't echo back to cloud when we're merging FROM cloud
   if (key.startsWith('pt-') && !_mergingFromCloud) schedulCloudSync();
 };
+
+// Check if the user is actively interacting with the app (input focused, etc.)
+function isUserInteracting() {
+  const active = document.activeElement;
+  if (!active) return false;
+  const tag = active.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if (active.isContentEditable) return true;
+  return false;
+}
+
+// Queued refresh — waits until user stops interacting
+let _pendingRefresh = false;
+let _interactionWatchTimer = null;
+
+function safeRefreshAllPages() {
+  if (isUserInteracting()) {
+    // User is typing / focused — queue it and check again soon
+    if (!_pendingRefresh) {
+      _pendingRefresh = true;
+      // Poll until the user is done interacting
+      clearInterval(_interactionWatchTimer);
+      _interactionWatchTimer = setInterval(() => {
+        if (!isUserInteracting()) {
+          clearInterval(_interactionWatchTimer);
+          _pendingRefresh = false;
+          refreshAllPages();
+        }
+      }, 800);
+    }
+    return;
+  }
+  _pendingRefresh = false;
+  refreshAllPages();
+}
 
 function refreshAllPages() {
   initFeeding();

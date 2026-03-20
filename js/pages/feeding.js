@@ -8,8 +8,19 @@ let _init = false;
 let _notifTimer = null;
 let _lastNotifKey = ''; // prevent duplicate notifications within same minute
 
+// Persist accordion state across re-renders
+let _guideOpen = false;
+let _dangerOpen = false;
+
 export function initFeeding() {
   renderFeeding();
+  // Restore accordion state after DOM rebuild
+  const guideTimeline = document.getElementById('guide-timeline');
+  const guideLabel = document.getElementById('guide-toggle-label');
+  const dangerList = document.getElementById('danger-foods-list');
+  const dangerLabel = document.getElementById('danger-toggle-label');
+  if (_guideOpen && guideTimeline) { guideTimeline.style.display = 'block'; if (guideLabel) guideLabel.textContent = 'Hide ▲'; }
+  if (_dangerOpen && dangerList) { dangerList.style.display = 'block'; if (dangerLabel) dangerLabel.textContent = 'Hide ▲'; }
   if (!_init) {
     _init = true;
     attachListeners();
@@ -389,6 +400,7 @@ function attachListeners() {
         const open = list.style.display !== 'none';
         list.style.display = open ? 'none' : 'block';
         label.textContent = open ? 'Show ▼' : 'Hide ▲';
+        _guideOpen = !open;
       }
       return;
     }
@@ -400,6 +412,7 @@ function attachListeners() {
         const open = list.style.display !== 'none';
         list.style.display = open ? 'none' : 'block';
         label.textContent = open ? 'Show ▼' : 'Hide ▲';
+        _dangerOpen = !open;
       }
       return;
     }
