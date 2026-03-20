@@ -30,6 +30,9 @@
       <span id="sync-indicator" class="sync-indicator hidden" title="Synced">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </span>
+      <button id="share-btn" class="share-btn" title="Invite people">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </button>
       <button id="auth-btn" class="auth-btn" title="Sign in to sync">
         <svg id="auth-icon" class="auth-btn__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <img id="auth-avatar" class="auth-btn__avatar hidden" width="28" height="28" alt="" />
@@ -99,6 +102,37 @@
       <span>Miles.</span>
     </button>
   </nav>
+
+  <!-- Share / Invite Modal -->
+  <div id="share-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-3)">
+        <h2 style="font-size:1rem;font-weight:700;margin:0">📤 Invite to Ruby's Tracker</h2>
+        <button id="share-modal-close" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);padding:4px">✕</button>
+      </div>
+
+      <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:var(--sp-3);line-height:1.5">
+        Share this link with anyone you'd like to help track Ruby. Everyone sees the same data in real time!
+      </p>
+
+      <div class="share-link-row">
+        <input id="share-url" class="share-url-input" readonly />
+        <button id="share-copy-btn" class="btn btn--accent btn--sm">Copy</button>
+      </div>
+      <div id="share-copied-msg" class="share-copied hidden">✓ Copied!</div>
+
+      <div style="margin-top:var(--sp-4);padding:var(--sp-3);background:var(--accent-light);border-radius:var(--radius);font-size:.78rem;line-height:1.6">
+        <div style="font-weight:700;margin-bottom:var(--sp-1)">How it works</div>
+        <ol style="margin:0;padding-left:var(--sp-4)">
+          <li>They open the link on their phone or computer</li>
+          <li>Tap the <strong>Sign in</strong> button (top-right) and log in with any Google account</li>
+          <li>That's it — feeds, weight, sleep &amp; everything syncs for everyone</li>
+        </ol>
+      </div>
+
+      <button id="share-native-btn" class="btn btn--accent" style="width:100%;margin-top:var(--sp-3)">Share via…</button>
+    </div>
+  </div>
 
   <script type="module" src="js/app.js"></script>
 </body>

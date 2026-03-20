@@ -27,6 +27,47 @@
   display: flex; align-items: center; gap: var(--sp-2);
 }
 
+/* --- Share Button ------------------------------------------ */
+.share-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-light); color: var(--accent);
+  transition: background .2s;
+}
+.share-btn:hover { background: var(--pink-200); }
+
+/* --- Modal Overlay ----------------------------------------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.45);
+  padding: var(--sp-4);
+  animation: fadeIn .15s ease;
+}
+.modal-overlay.hidden { display: none; }
+.modal-card {
+  background: var(--surface); border-radius: var(--radius-lg);
+  padding: var(--sp-5); width: 100%; max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.2);
+  animation: slideUp .2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } }
+
+.share-link-row {
+  display: flex; gap: var(--sp-2); align-items: center;
+}
+.share-url-input {
+  flex: 1; font-size: .8rem; padding: 8px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); color: var(--text); font-family: monospace;
+}
+.share-copied {
+  font-size: .75rem; color: var(--success); font-weight: 600;
+  margin-top: var(--sp-1); text-align: center;
+}
+.share-copied.hidden { display: none; }
+
 /* --- Auth Button ------------------------------------------- */
 .auth-btn {
   width: 36px; height: 36px; border-radius: 50%;

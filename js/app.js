@@ -162,6 +162,64 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
+/* ── Share / Invite Modal ──────────────────────────────── */
+const shareBtn = document.getElementById('share-btn');
+const shareModal = document.getElementById('share-modal');
+const shareModalClose = document.getElementById('share-modal-close');
+const shareUrlInput = document.getElementById('share-url');
+const shareCopyBtn = document.getElementById('share-copy-btn');
+const shareCopiedMsg = document.getElementById('share-copied-msg');
+const shareNativeBtn = document.getElementById('share-native-btn');
+
+const APP_URL = 'https://sfmx.github.io/puppy-tracker/';
+
+function openShareModal() {
+  shareUrlInput.value = APP_URL;
+  shareCopiedMsg.classList.add('hidden');
+  shareModal.classList.remove('hidden');
+  // Hide native share button if API not available
+  if (!navigator.share) shareNativeBtn.style.display = 'none';
+}
+
+function closeShareModal() {
+  shareModal.classList.add('hidden');
+}
+
+shareBtn?.addEventListener('click', openShareModal);
+shareModalClose?.addEventListener('click', closeShareModal);
+shareModal?.addEventListener('click', e => {
+  if (e.target === shareModal) closeShareModal();
+});
+
+shareCopyBtn?.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(APP_URL);
+  } catch {
+    // fallback
+    shareUrlInput.select();
+    document.execCommand('copy');
+  }
+  shareCopiedMsg.classList.remove('hidden');
+  shareCopyBtn.textContent = 'Copied!';
+  setTimeout(() => {
+    shareCopiedMsg.classList.add('hidden');
+    shareCopyBtn.textContent = 'Copy';
+  }, 2000);
+});
+
+shareNativeBtn?.addEventListener('click', async () => {
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Ruby Puppy Tracker 🐾',
+        text: 'Help me track Ruby! Open this link and sign in with Google to sync feeds, weight, sleep & more.',
+        url: APP_URL
+      });
+    } catch { /* user cancelled */ }
+  }
+  closeShareModal();
+});
+
 /* ── Init ───────────────────────────────────────────────── */
 async function init() {
   updateAge();
