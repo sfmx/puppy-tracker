@@ -59,7 +59,10 @@ export const feedAmounts = [
   '½ tbsp', '1 tbsp', '1½ tbsp', '2 tbsp', '3 tbsp', 'Small bowl',
 ];
 
-export const feeders = ['Me', 'Wife', 'Sitter'];
+export const feeders = ['Jason', 'Wendy', 'Racheal'];
+
+/* Default feed schedule times (24h format) — matches meals/day from guide */
+export const defaultFeedSchedule = ['06:00', '10:00', '14:00', '18:00'];
 
 /* ── Potty Types ────────────────────────────────────────────── */
 export const pottyTypes = [

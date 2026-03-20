@@ -1,19 +1,80 @@
 /* ============================================================
-   FEEDING — Log feeds with type, amount, who fed, notes
+   FEEDING — Log feeds, schedule reminders, full history
    ============================================================ */
-import { feedTypes, feedAmounts, feeders, feedingGuide, getPuppyAge, getWeaningProgress } from '../data.js';
-import { loadFeedings, saveFeedings, esc, formatTime, formatDate, todayISO, nowISO } from '../storage.js';
+import { feedTypes, feedAmounts, feeders, feedingGuide, defaultFeedSchedule, getPuppyAge, getWeaningProgress, PUPPY } from '../data.js';
+import { loadFeedings, saveFeedings, loadSchedule, saveSchedule, esc, formatTime, formatDate, todayISO, nowISO, timeAgo } from '../storage.js';
 
 let _init = false;
+let _notifTimer = null;
+let _lastNotifKey = ''; // prevent duplicate notifications within same minute
 
 export function initFeeding() {
   renderFeeding();
   if (!_init) {
     _init = true;
     attachListeners();
+    startNotificationChecker();
   }
 }
 
+/* ── Schedule helpers ─────────────────────────────────────── */
+function getSchedule() {
+  return loadSchedule() || { times: [...defaultFeedSchedule], enabled: true };
+}
+
+function saveScheduleData(sched) {
+  saveSchedule(sched);
+}
+
+function nextFeedInfo(schedule, feedings) {
+  if (!schedule.enabled || schedule.times.length === 0) return null;
+  const now = new Date();
+  const hhmm = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+  const sorted = [...schedule.times].sort();
+  const next = sorted.find(t => t > hhmm);
+  if (next) return { time: next, label: 'Today' };
+  return { time: sorted[0], label: 'Tomorrow' };
+}
+
+/* ── Notification helpers ─────────────────────────────────── */
+function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function sendNotification(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    new Notification(title, { body, icon: 'icons/icon-192.svg', badge: 'icons/favicon.svg', tag: 'feed-reminder' });
+  } catch { /* mobile fallback — SW needed for push */ }
+}
+
+function startNotificationChecker() {
+  // Check every 30 seconds
+  _notifTimer = setInterval(() => {
+    const sched = getSchedule();
+    if (!sched.enabled) return;
+    const now = new Date();
+    const hhmm = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    const key = todayISO() + '-' + hhmm;
+    if (key === _lastNotifKey) return; // already fired this minute
+    if (sched.times.includes(hhmm)) {
+      _lastNotifKey = key;
+      sendNotification(`🍽️ Time to feed ${PUPPY.name}!`, `Scheduled feed at ${formatTimeLabel(hhmm)}`);
+    }
+  }, 30000);
+}
+
+function formatTimeLabel(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const suffix = h >= 12 ? 'pm' : 'am';
+  const h12 = h % 12 || 12;
+  return `${h12}:${m.toString().padStart(2, '0')} ${suffix}`;
+}
+
+/* ── Render ───────────────────────────────────────────────── */
 function renderFeeding() {
   const el = document.getElementById('page-feeding');
   const feedings = loadFeedings();
@@ -21,6 +82,9 @@ function renderFeeding() {
   const weanPct = getWeaningProgress();
   const guide = feedingGuide.find(g => g.week <= weeks + 1) || feedingGuide[0];
   const todayFeeds = feedings.filter(f => f.time && f.time.startsWith(todayISO()));
+  const sched = getSchedule();
+  const nxt = nextFeedInfo(sched, feedings);
+  const notifOk = ('Notification' in window) && Notification.permission === 'granted';
 
   el.innerHTML = `
     <!-- Today summary -->
@@ -37,6 +101,10 @@ function renderFeeding() {
         <div class="today-stat__value">${weanPct}%</div>
         <div class="today-stat__label">Weaned</div>
       </div>
+      ${nxt ? `<div class="today-stat">
+        <div class="today-stat__value">${formatTimeLabel(nxt.time)}</div>
+        <div class="today-stat__label">Next feed</div>
+      </div>` : ''}
     </div>
 
     <!-- Weaning progress -->
@@ -47,6 +115,27 @@ function renderFeeding() {
       </div>
       <div class="weaning-bar"><div class="weaning-bar__fill" style="width:${weanPct}%"></div></div>
       <p style="font-size:.75rem;color:var(--text-muted);margin-top:var(--sp-1)">💡 ${esc(guide.goal)}</p>
+    </div>
+
+    <!-- Feed Schedule -->
+    <div class="card" style="margin-bottom:var(--sp-4)" id="schedule-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-3)">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">⏰ Feed Schedule</h3>
+        <label class="schedule-toggle" style="display:flex;align-items:center;gap:var(--sp-2);font-size:.75rem;color:var(--text-muted);cursor:pointer">
+          <input type="checkbox" id="schedule-enabled" ${sched.enabled ? 'checked' : ''} style="accent-color:var(--accent)">
+          Reminders ${notifOk ? '🔔' : '🔕'}
+        </label>
+      </div>
+      ${!notifOk && sched.enabled ? `<button class="btn btn--small" id="enable-notif-btn" style="margin-bottom:var(--sp-3);font-size:.75rem">Enable notifications 🔔</button>` : ''}
+      <div class="schedule-times" id="schedule-times">
+        ${sched.times.map((t, i) => `
+          <div class="schedule-time-row" style="display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-2)">
+            <input type="time" class="form-input schedule-time-input" value="${t}" data-sched-idx="${i}" style="flex:1;padding:var(--sp-2)">
+            <button class="btn btn--small btn--danger schedule-remove" data-sched-idx="${i}" title="Remove">✕</button>
+          </div>
+        `).join('')}
+      </div>
+      <button class="btn btn--small btn--secondary" id="schedule-add-btn" style="margin-top:var(--sp-1)">+ Add time</button>
     </div>
 
     <!-- Quick log form -->
@@ -70,7 +159,7 @@ function renderFeeding() {
         `).join('')}
       </div>
 
-      <label style="font-size:.8rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:var(--sp-2)">Who fed Ruby?</label>
+      <label style="font-size:.8rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:var(--sp-2)">Who fed ${PUPPY.name}?</label>
       <div class="who-grid" id="feed-who-grid">
         ${feeders.map((f, i) => `
           <button class="who-btn${i === 0 ? ' active' : ''}" data-who="${f}">${f}</button>
@@ -85,9 +174,10 @@ function renderFeeding() {
       <button class="btn btn--primary btn--block" id="feed-save-btn">Save Feed 🍽️</button>
     </div>
 
-    <!-- History -->
+    <!-- Full History -->
     <div class="section-header" style="margin-top:var(--sp-6)">
-      <h2>Recent Feeds</h2>
+      <h2>Feed History</h2>
+      <span style="font-size:.75rem;color:var(--text-muted)">${feedings.length} total</span>
     </div>
     <div class="card" id="feed-history">
       ${renderHistory(feedings)}
@@ -97,7 +187,7 @@ function renderFeeding() {
 
 function renderHistory(feedings) {
   if (feedings.length === 0) {
-    return `<div class="empty-state"><div class="empty-state__icon">🥣</div><div class="empty-state__text">No feeds logged yet. Log Ruby's first feed above!</div></div>`;
+    return `<div class="empty-state"><div class="empty-state__icon">🥣</div><div class="empty-state__text">No feeds logged yet. Log ${PUPPY.name}'s first feed above!</div></div>`;
   }
 
   // Group by date
@@ -110,8 +200,8 @@ function renderHistory(feedings) {
 
   return Object.entries(groups).map(([date, items]) => `
     <div class="date-group">
-      <div class="date-group__header">${date}</div>
-      ${items.map((f, i) => {
+      <div class="date-group__header">${date} <span style="font-weight:400;opacity:.6">(${items.length} feed${items.length !== 1 ? 's' : ''})</span></div>
+      ${items.map((f) => {
         const type = feedTypes.find(t => t.id === f.type) || feedTypes[0];
         return `
           <div class="log-entry">
@@ -129,6 +219,7 @@ function renderHistory(feedings) {
   `).join('');
 }
 
+/* ── Event Listeners ──────────────────────────────────────── */
 function attachListeners() {
   const el = document.getElementById('page-feeding');
 
@@ -166,6 +257,54 @@ function attachListeners() {
       const feeds = loadFeedings();
       feeds.splice(idx, 1);
       saveFeedings(feeds);
+      renderFeeding();
+      return;
+    }
+    // Enable notifications button
+    if (e.target.closest('#enable-notif-btn')) {
+      requestNotifPermission();
+      // Re-render after a short delay to update UI
+      setTimeout(renderFeeding, 500);
+      return;
+    }
+    // Schedule remove
+    const rmBtn = e.target.closest('.schedule-remove');
+    if (rmBtn) {
+      const idx = parseInt(rmBtn.dataset.schedIdx, 10);
+      const sched = getSchedule();
+      sched.times.splice(idx, 1);
+      saveScheduleData(sched);
+      renderFeeding();
+      return;
+    }
+    // Schedule add
+    if (e.target.closest('#schedule-add-btn')) {
+      const sched = getSchedule();
+      sched.times.push('12:00');
+      saveScheduleData(sched);
+      renderFeeding();
+      return;
+    }
+  });
+
+  // Schedule toggle & time changes (delegate)
+  el.addEventListener('change', e => {
+    // Enable/disable toggle
+    if (e.target.id === 'schedule-enabled') {
+      const sched = getSchedule();
+      sched.enabled = e.target.checked;
+      saveScheduleData(sched);
+      if (sched.enabled) requestNotifPermission();
+      renderFeeding();
+      return;
+    }
+    // Time input changed
+    if (e.target.classList.contains('schedule-time-input')) {
+      const idx = parseInt(e.target.dataset.schedIdx, 10);
+      const sched = getSchedule();
+      sched.times[idx] = e.target.value;
+      sched.times.sort();
+      saveScheduleData(sched);
       renderFeeding();
     }
   });

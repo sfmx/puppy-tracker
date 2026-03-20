@@ -102,7 +102,7 @@ async function handleAuthStateChange(user) {
 
 function mergeCloudData(cloud) {
   // Simple merge: if cloud has data, use it (cloud = source of truth for shared app)
-  const stores = ['feedings', 'weights', 'potty', 'sleep', 'health', 'milestones', 'vet-notes'];
+  const stores = ['feedings', 'weights', 'potty', 'sleep', 'health', 'milestones', 'vet-notes', 'schedule'];
   stores.forEach(name => {
     if (cloud[name] !== undefined) {
       localStorage.setItem('pt-' + name, JSON.stringify(cloud[name]));
@@ -111,7 +111,7 @@ function mergeCloudData(cloud) {
 }
 
 async function pushLocalToCloud() {
-  const stores = ['feedings', 'weights', 'potty', 'sleep', 'health', 'milestones', 'vet-notes'];
+  const stores = ['feedings', 'weights', 'potty', 'sleep', 'health', 'milestones', 'vet-notes', 'schedule'];
   const data = {};
   stores.forEach(name => {
     try {

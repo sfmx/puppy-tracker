@@ -45,6 +45,9 @@ export function saveMilestones(v) { save('milestones', v); }
 export function loadPrefs()  { return load('prefs', { lastTab: 'feeding' }); }
 export function savePrefs(v) { save('prefs', v); }
 
+export function loadSchedule()  { return load('schedule', null); }
+export function saveSchedule(v) { save('schedule', v); }
+
 /* ── Helpers ──────────────────────────────────────────────── */
 export function esc(str) {
   const el = document.createElement('span');

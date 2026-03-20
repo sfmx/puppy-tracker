@@ -38,6 +38,11 @@
   color: var(--accent-dark);
 }
 
+/* --- Schedule ---------------------------------------------- */
+.schedule-time-row input[type="time"] {
+  font-size: .875rem; font-weight: 600;
+}
+
 /* --- Who Fed ----------------------------------------------- */
 .who-grid {
   display: flex; gap: var(--sp-2); margin-bottom: var(--sp-4);
