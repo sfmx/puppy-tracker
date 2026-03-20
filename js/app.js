@@ -95,10 +95,10 @@ async function handleAuthStateChange(user) {
       } else {
         await pushLocalToCloud();
       }
-      // Subscribe to real-time updates
+      // Subscribe to real-time updates — only refresh if data actually changed
       subscribeSharedData(data => {
-        mergeCloudData(data);
-        refreshAllPages();
+        const changed = mergeCloudData(data);
+        if (changed) refreshAllPages();
       });
     } catch (err) {
       console.warn('Cloud sync error:', err.message);
@@ -111,14 +111,26 @@ async function handleAuthStateChange(user) {
   }
 }
 
+let _mergingFromCloud = false;   // suppress echo sync during cloud merge
+
 function mergeCloudData(cloud) {
   // Simple merge: if cloud has data, use it (cloud = source of truth for shared app)
+  // Only write to localStorage if the data actually changed — prevents DOM thrash
   const stores = ['feedings', 'weights', 'potty', 'sleep', 'health', 'milestones', 'vet-notes', 'schedule'];
+  let changed = false;
+  _mergingFromCloud = true;
   stores.forEach(name => {
     if (cloud[name] !== undefined) {
-      localStorage.setItem('pt-' + name, JSON.stringify(cloud[name]));
+      const incoming = JSON.stringify(cloud[name]);
+      const existing = localStorage.getItem('pt-' + name);
+      if (incoming !== existing) {
+        localStorage.setItem('pt-' + name, incoming);
+        changed = true;
+      }
     }
   });
+  _mergingFromCloud = false;
+  return changed;
 }
 
 async function pushLocalToCloud() {
@@ -145,7 +157,8 @@ function schedulCloudSync() {
 const _origSetItem = localStorage.setItem.bind(localStorage);
 localStorage.setItem = function(key, value) {
   _origSetItem(key, value);
-  if (key.startsWith('pt-')) schedulCloudSync();
+  // Don't echo back to cloud when we're merging FROM cloud
+  if (key.startsWith('pt-') && !_mergingFromCloud) schedulCloudSync();
 };
 
 function refreshAllPages() {
