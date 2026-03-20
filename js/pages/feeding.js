@@ -1,7 +1,7 @@
 /* ============================================================
    FEEDING — Log feeds, schedule reminders, full history
    ============================================================ */
-import { feedTypes, feedAmounts, feeders, feedingGuide, defaultFeedSchedule, getPuppyAge, getWeaningProgress, PUPPY } from '../data.js';
+import { feedTypes, feedAmounts, feeders, feedingGuide, defaultFeedSchedule, dangerousFoods, getPuppyAge, getWeaningProgress, PUPPY } from '../data.js';
 import { loadFeedings, saveFeedings, loadSchedule, saveSchedule, esc, formatTime, formatDate, todayISO, nowISO, timeAgo } from '../storage.js';
 
 let _init = false;
@@ -80,7 +80,7 @@ function renderFeeding() {
   const feedings = loadFeedings();
   const { weeks } = getPuppyAge();
   const weanPct = getWeaningProgress();
-  const guide = feedingGuide.find(g => g.week <= weeks + 1) || feedingGuide[0];
+  const guide = [...feedingGuide].reverse().find(g => g.week <= Math.max(weeks, 3)) || feedingGuide[0];
   const todayFeeds = feedings.filter(f => f.time && f.time.startsWith(todayISO()));
   const sched = getSchedule();
   const nxt = nextFeedInfo(sched, feedings);
@@ -115,6 +115,81 @@ function renderFeeding() {
       </div>
       <div class="weaning-bar"><div class="weaning-bar__fill" style="width:${weanPct}%"></div></div>
       <p style="font-size:.75rem;color:var(--text-muted);margin-top:var(--sp-1)">💡 ${esc(guide.goal)}</p>
+    </div>
+
+    <!-- Current Week Food Guide -->
+    <div class="card food-guide-current" style="margin-bottom:var(--sp-4);border-left:4px solid var(--accent)">
+      <h3 style="font-size:.9rem;font-weight:700;margin-bottom:var(--sp-2)">📖 This Week's Food Guide <span class="tag tag--green">Week ${guide.week}</span></h3>
+      
+      <div style="margin-bottom:var(--sp-3)">
+        <div style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:var(--sp-1)">Recommended Foods</div>
+        <ul style="margin:0;padding-left:var(--sp-4);font-size:.8rem;line-height:1.6">
+          ${(guide.foods || []).map(f => `<li>${esc(f)}</li>`).join('')}
+        </ul>
+      </div>
+
+      <div style="margin-bottom:var(--sp-3)">
+        <div style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:var(--sp-1)">Amount</div>
+        <p style="font-size:.8rem;margin:0">${esc(guide.amount || '')}</p>
+      </div>
+
+      ${guide.recipe ? `
+      <div style="margin-bottom:var(--sp-3);background:var(--warm-50);padding:var(--sp-3);border-radius:var(--radius)">
+        <div style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:var(--sp-1)">🍳 Recipe</div>
+        <p style="font-size:.8rem;margin:0;line-height:1.5">${esc(guide.recipe)}</p>
+      </div>` : ''}
+
+      ${(guide.tips || []).length ? `
+      <div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:var(--sp-1)">💡 Tips</div>
+        <ul style="margin:0;padding-left:var(--sp-4);font-size:.8rem;line-height:1.6">
+          ${guide.tips.map(t => `<li>${esc(t)}</li>`).join('')}
+        </ul>
+      </div>` : ''}
+    </div>
+
+    <!-- Full Food Guide Timeline (collapsible) -->
+    <div class="card" style="margin-bottom:var(--sp-4)">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" id="guide-toggle">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0">📅 Full Food Guide Timeline</h3>
+        <span style="font-size:.75rem;color:var(--accent);font-weight:600" id="guide-toggle-label">Show ▼</span>
+      </div>
+      <div id="guide-timeline" style="display:none;margin-top:var(--sp-3)">
+        ${feedingGuide.map(g => {
+          const isCurrent = g.week === guide.week;
+          const isPast = g.week < guide.week;
+          const borderColor = isCurrent ? 'var(--accent)' : isPast ? 'var(--green)' : 'var(--border)';
+          const bgColor = isCurrent ? 'var(--accent-light)' : 'transparent';
+          return `
+          <div style="border-left:3px solid ${borderColor};padding:var(--sp-3);margin-bottom:var(--sp-2);background:${bgColor};border-radius:0 var(--radius) var(--radius) 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-1)">
+              <span style="font-size:.8rem;font-weight:700">Week ${g.week} ${isCurrent ? '← now' : isPast ? '✓' : ''}</span>
+              <span style="font-size:.7rem;color:var(--text-muted)">${g.meals} meals/day</span>
+            </div>
+            <div style="font-size:.75rem;color:var(--text-secondary);margin-bottom:var(--sp-1)">${esc(g.texture)}</div>
+            <div style="font-size:.75rem;color:var(--text-muted)">${esc(g.amount || '')}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Dangerous Foods (collapsible) -->
+    <div class="card" style="margin-bottom:var(--sp-4);border:1px solid var(--red)">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" id="danger-toggle">
+        <h3 style="font-size:.9rem;font-weight:700;margin:0;color:var(--red)">⚠️ NEVER Feed These</h3>
+        <span style="font-size:.75rem;color:var(--red);font-weight:600" id="danger-toggle-label">Show ▼</span>
+      </div>
+      <div id="danger-foods-list" style="display:none;margin-top:var(--sp-3)">
+        ${dangerousFoods.map(d => `
+          <div style="display:flex;align-items:flex-start;gap:var(--sp-2);padding:var(--sp-2) 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:1.2rem;flex-shrink:0">${d.icon}</span>
+            <div>
+              <div style="font-size:.8rem;font-weight:700;color:var(--red)">${esc(d.food)}</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">${esc(d.why)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
 
     <!-- Feed Schedule -->
@@ -283,6 +358,28 @@ function attachListeners() {
       sched.times.push('12:00');
       saveScheduleData(sched);
       renderFeeding();
+      return;
+    }
+    // Toggle food guide timeline
+    if (e.target.closest('#guide-toggle')) {
+      const list = document.getElementById('guide-timeline');
+      const label = document.getElementById('guide-toggle-label');
+      if (list) {
+        const open = list.style.display !== 'none';
+        list.style.display = open ? 'none' : 'block';
+        label.textContent = open ? 'Show ▼' : 'Hide ▲';
+      }
+      return;
+    }
+    // Toggle danger foods
+    if (e.target.closest('#danger-toggle')) {
+      const list = document.getElementById('danger-foods-list');
+      const label = document.getElementById('danger-toggle-label');
+      if (list) {
+        const open = list.style.display !== 'none';
+        list.style.display = open ? 'none' : 'block';
+        label.textContent = open ? 'Show ▼' : 'Hide ▲';
+      }
       return;
     }
   });
