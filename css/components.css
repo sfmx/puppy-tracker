@@ -2,6 +2,62 @@
    COMPONENTS — Reusable UI components
    ============================================================ */
 
+/* --- Login Gate -------------------------------------------- */
+.login-gate {
+  position: fixed; inset: 0; z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  padding: var(--sp-4);
+}
+.login-gate.hidden { display: none; }
+.login-gate__card {
+  text-align: center; max-width: 360px; width: 100%;
+}
+.login-gate__emoji {
+  font-size: 4rem; margin-bottom: var(--sp-3);
+  animation: bounce 1.5s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.login-gate__title {
+  font-size: 1.5rem; font-weight: 800; color: var(--accent-dark);
+  margin-bottom: var(--sp-1);
+}
+.login-gate__subtitle {
+  font-size: .85rem; color: var(--text-muted); font-weight: 600;
+  margin-bottom: var(--sp-4);
+}
+.login-gate__desc {
+  font-size: .8rem; color: var(--text-secondary); line-height: 1.6;
+  margin-bottom: var(--sp-5);
+}
+.login-gate__btn {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: 12px 28px;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-pill);
+  font-size: .9rem; font-weight: 600; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  transition: box-shadow .2s, transform .15s;
+}
+.login-gate__btn:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  transform: translateY(-1px);
+}
+.login-gate__btn:active { transform: translateY(0); }
+.login-gate__btn:disabled {
+  opacity: .6; cursor: not-allowed; transform: none;
+}
+.login-gate__footer {
+  font-size: .7rem; color: var(--text-muted);
+  margin-top: var(--sp-4); line-height: 1.5;
+}
+
+/* --- App Shell --------------------------------------------- */
+.app-shell.hidden { display: none; }
+
 /* --- Top Bar ----------------------------------------------- */
 .top-bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;

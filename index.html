@@ -19,6 +19,24 @@
 </head>
 <body>
 
+  <!-- Login Gate -->
+  <div id="login-gate" class="login-gate">
+    <div class="login-gate__card">
+      <div class="login-gate__emoji">🐾</div>
+      <h1 class="login-gate__title">Ruby Puppy Tracker</h1>
+      <p class="login-gate__subtitle">Maltese Shih Tzu &bull; Born 22 Feb 2026</p>
+      <p class="login-gate__desc">Sign in with Google to track Ruby's feeds, weight, sleep and milestones together in real time.</p>
+      <button id="login-gate-btn" class="login-gate__btn">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.998 23.998 0 0 0 0 24c0 3.77.9 7.35 2.56 10.53l7.97-5.94z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.94C6.51 42.62 14.62 48 24 48z"/></svg>
+        Sign in with Google
+      </button>
+      <p class="login-gate__footer">Everyone who signs in shares the same data — changes sync instantly.</p>
+    </div>
+  </div>
+
+  <!-- App (hidden until signed in) -->
+  <div id="app-shell" class="app-shell hidden">
+
   <!-- Top bar -->
   <header class="top-bar">
     <div class="top-bar__left">
@@ -33,9 +51,8 @@
       <button id="share-btn" class="share-btn" title="Invite people">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       </button>
-      <button id="auth-btn" class="auth-btn" title="Sign in to sync">
-        <svg id="auth-icon" class="auth-btn__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <img id="auth-avatar" class="auth-btn__avatar hidden" width="28" height="28" alt="" />
+      <button id="auth-btn" class="auth-btn" title="Account">
+        <img id="auth-avatar" class="auth-btn__avatar" width="28" height="28" alt="" />
       </button>
     </div>
   </header>
@@ -102,6 +119,8 @@
       <span>Miles.</span>
     </button>
   </nav>
+
+  </div><!-- /app-shell -->
 
   <!-- Share / Invite Modal -->
   <div id="share-modal" class="modal-overlay hidden">

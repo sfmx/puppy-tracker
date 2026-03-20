@@ -2,7 +2,7 @@
    SERVICE WORKER — Stale-while-revalidate for app shell
    ============================================================ */
 
-const CACHE_NAME = 'puppy-tracker-v5';
+const CACHE_NAME = 'puppy-tracker-v6';
 const SHELL_ASSETS = [
   './',
   './index.html',
