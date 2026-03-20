@@ -119,7 +119,16 @@ function renderFeeding() {
 
     <!-- Current Week Food Guide -->
     <div class="card food-guide-current" style="margin-bottom:var(--sp-4);border-left:4px solid var(--accent)">
-      <h3 style="font-size:.9rem;font-weight:700;margin-bottom:var(--sp-2)">📖 This Week's Food Guide <span class="tag tag--green">Week ${guide.week}</span></h3>
+      <h3 style="font-size:.9rem;font-weight:700;margin-bottom:2px">📖 This Week's Food Guide <span class="tag tag--green">Week ${guide.week}</span></h3>
+      <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:var(--sp-2)">${(() => {
+        const born = new Date(PUPPY.birthday);
+        const idx = feedingGuide.findIndex(g => g.week === guide.week);
+        const s = new Date(born); s.setDate(born.getDate() + (guide.week - 1) * 7);
+        const nw = idx < feedingGuide.length - 1 ? feedingGuide[idx + 1].week : guide.week + 1;
+        const e = new Date(born); e.setDate(born.getDate() + nw * 7 - 1);
+        const fmt = d => d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+        return fmt(s) + ' – ' + fmt(e);
+      })()}</div>
       
       <div style="margin-bottom:var(--sp-3)">
         <div style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:var(--sp-1)">Recommended Foods</div>
@@ -155,17 +164,29 @@ function renderFeeding() {
         <span style="font-size:.75rem;color:var(--accent);font-weight:600" id="guide-toggle-label">Show ▼</span>
       </div>
       <div id="guide-timeline" style="display:none;margin-top:var(--sp-3)">
-        ${feedingGuide.map(g => {
+        ${feedingGuide.map((g, i) => {
           const isCurrent = g.week === guide.week;
           const isPast = g.week < guide.week;
           const borderColor = isCurrent ? 'var(--accent)' : isPast ? 'var(--green)' : 'var(--border)';
           const bgColor = isCurrent ? 'var(--accent-light)' : 'transparent';
+          // Calculate date range for this guide entry
+          const born = new Date(PUPPY.birthday);
+          const startDate = new Date(born);
+          startDate.setDate(born.getDate() + (g.week - 1) * 7);
+          const nextWeek = i < feedingGuide.length - 1 ? feedingGuide[i + 1].week : g.week + 1;
+          const endDate = new Date(born);
+          endDate.setDate(born.getDate() + nextWeek * 7 - 1);
+          const fmt = d => d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+          const rangeLabel = nextWeek > g.week + 1
+            ? `Weeks ${g.week}–${nextWeek - 1}`
+            : `Week ${g.week}`;
           return `
           <div style="border-left:3px solid ${borderColor};padding:var(--sp-3);margin-bottom:var(--sp-2);background:${bgColor};border-radius:0 var(--radius) var(--radius) 0">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-1)">
-              <span style="font-size:.8rem;font-weight:700">Week ${g.week} ${isCurrent ? '← now' : isPast ? '✓' : ''}</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+              <span style="font-size:.8rem;font-weight:700">${rangeLabel} ${isCurrent ? '← now' : isPast ? '✓' : ''}</span>
               <span style="font-size:.7rem;color:var(--text-muted)">${g.meals} meals/day</span>
             </div>
+            <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:var(--sp-1)">${fmt(startDate)} – ${fmt(endDate)}</div>
             <div style="font-size:.75rem;color:var(--text-secondary);margin-bottom:var(--sp-1)">${esc(g.texture)}</div>
             <div style="font-size:.75rem;color:var(--text-muted)">${esc(g.amount || '')}</div>
           </div>`;
